@@ -1,6 +1,6 @@
 #!/bin/bash
 cp .env.template .env
-docker-compose up -d --build
+docker-compose -f docker-compose-dbt-postgres.yml up -d --build
 docker-compose -f docker-compose-postgres.yml up -d --build
 docker ps
 

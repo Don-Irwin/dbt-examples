@@ -5,7 +5,7 @@ services:
   dbt:
     image: entechlog/dbt${DBT_VERSION_TAG}
     container_name: dbt
-    build: ./docker/dbt/
+    build: ./docker/dbt/dbt_postgress_only
 #    env_file:
 #      - ./docker/dbt/.env
     command: 

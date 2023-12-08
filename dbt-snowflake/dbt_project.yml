@@ -1,0 +1,99 @@
+
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: 'dbt_snowflake_demo'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'dbt-snowflake'
+
+# These configurations specify where dbt should look for different types of files.
+# The `source-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+source-paths: ["models"]
+analysis-paths: ["analysis"]
+test-paths: ["tests"]
+data-paths: ["data"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+docs-paths: ["docs"]
+asset-paths: ["assets"]
+
+target-path: "target"  # directory which will store compiled SQL files
+clean-targets:         # directories to be removed by `dbt clean`
+    - "target"
+    - "dbt_modules"
+    - "logs"
+
+vars:
+  logging_db: 'DBT_DEMO_STAGING'
+  logging_schema: 'utils'
+
+  dbt_artifacts:
+    dbt_artifacts_database: 'DBT_DEMO_STAGING' # optional, default is your target database
+    dbt_artifacts_schema: 'utils' # optional, default is 'dbt_artifacts'
+    dbt_artifacts_table: 'dbt_artifacts' # optional, default is 'artifacts'
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/docs/configuring-models
+
+# In this example config, we tell dbt to build all models in the example/ directory
+# as tables. These settings can be overridden in the individual model files
+# using the `{{ config(...) }}` macro.
+models:
+  pre-hook: 
+  #  - "{{ log_model_start_event() }}"
+  post-hook: 
+  #  - "{{ log_model_end_event() }}"
+    - "{{ dbt_snow_mask.apply_masking_policy() }}"
+
+  dbt_snowflake_demo:
+      materialized: table
+      staging:
+        database: DBT_DEMO_STAGING
+        schema: SAKILA
+        materialized: table
+      marts:
+        database: DBT_DEMO_MARTS
+        schema: CORE
+        materialized: view
+      utils:
+        database: DBT_DEMO_STAGING
+        schema: UTILS
+        materialized: table
+
+  dbt_artifacts:
+    database: DBT_DEMO_STAGING
+    +schema: UTILS
+    staging:
+      +schema: STAGE
+
+seeds:
+  dbt_snowflake_demo:
+    database: DBT_DEMO_SOURCES
+    schema: raw # all seeds in this project will use the mapping schema by default
+    sakila:
+      schema: SAKILA # seeds in the `data/sakila/ subdirectory will use the sakila schema
+    lookups:
+      schema: lookups # seeds in the `data/lookups/ subdirectory will use the lookups schema
+
+snapshots:
+  dbt_snowflake_demo:
+      marts:
+        target_database: DBT_DEMO_MARTS
+        target_schema: CORE
+        
+on-run-start:
+#  - "{{ dbt_artifacts.create_artifact_resources() }}"
+#  - "{{ create_audit_schema() }}"
+#  - "{{ create_audit_log_table() }}"
+#  - "{{ log_run_start_event() }}"
+
+on-run-end:
+#    - "{{ log_run_end_event() }}"
+#    - "{{ dbt_artifacts.upload_dbt_artifacts(filenames=['manifest', 'run_results']) }}"
+
+#    - "create table if not exists {{ target.schema }}.audit_dbt_results (node text, status text, execution_time decimal(10,2), time timestamp)"
+#    - "insert into {{ target.schema }}.audit_dbt_results (node, status, execution_time, time) values {{ results_values(results) }}"

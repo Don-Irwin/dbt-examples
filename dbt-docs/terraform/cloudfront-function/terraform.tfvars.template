@@ -1,0 +1,2 @@
+app_code  = "dbt-demo"
+enable_auth_flag=false

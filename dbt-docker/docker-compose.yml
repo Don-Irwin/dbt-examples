@@ -10,7 +10,7 @@ services:
 #      - ./docker/dbt/.env
     command: 
       - bash 
-      - -c 
+      - -c    
       - |
         echo "Launching dbt"
         #
@@ -18,8 +18,8 @@ services:
     restart: unless-stopped
     volumes:
       - type: bind
-        source: /C
-        target: /C
+        source: ${PWD}   # Uses the current working directory as the source
+        target: /dbt_root
     ports:
       - "8085:8085"
     environment:
